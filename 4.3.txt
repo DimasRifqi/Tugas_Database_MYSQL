@@ -1,0 +1,156 @@
+SOAL 4.3
+
+1.  START TRANSACTION;
+    Query OK, 0 rows affected (0.00 sec)
+
+    INSERT INTO produk (kode, nama, harga_beli, harga_jual, stok, min_stok, foto, deskripsi, jenis_produk_id) VALUES
+    -> ('HPPC', 'Poco F6', 5300000, 5500000, 40, 10, '', 'Poco F6 12/256Gb', 1),
+    -> ('HPIP', 'Iphone 11', 6300000, 6500000, 30, 15, '', 'Iphone 11 64GB', 2),
+    -> ('HPPX', 'Poco X6 Pro', 5000000, 5200000, 40, 10, '', 'Poco X6 Pro 12/512GB', 3);
+    Query OK, 3 rows affected (0.01 sec)
+    Records: 3  Duplicates: 0  Warnings: 0
+
+    UPDATE produk SET stok = 20 WHERE kode = 'HPPX';
+    Query OK, 1 row affected (0.00 sec)
+    Rows matched: 1  Changed: 1  Warnings: 0
+
+    select * from produk;
+    +----+--------+-------------------+------------+------------+------+----------+------------------------+---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------+-----------------+
+    | id | kode   | nama              | harga_beli | harga_jual | stok | min_stok | foto                   | deskripsi
+
+        | jenis_produk_id |
+    +----+--------+-------------------+------------+------------+------+----------+------------------------+---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------+-----------------+
+    |  1 | TV01   | Televisi 21 inchs |    3500000 |   50500000 |    5 |        2 |                        | NULL
+
+        |               1 |
+    |  2 | TV02   | Televisi 40 inch  |    5500000 |    7440000 |    4 |        2 | NULL                   | NULL
+
+        |               1 |
+    |  3 | K001   | Kulkas 2 pintu    |    3500000 |    4680000 |    6 |        2 |                        | NULL
+
+        |               1 |
+    |  4 | M001   | Meja Makan        |     500000 |     600000 |    4 |        3 | NULL                   | NULL
+
+        |               2 |
+    |  5 | TK01   | Teh Kotak         |       3000 |       3500 |    6 |       10 | foto-5.png             | NULL
+
+        |               4 |
+    |  6 | PC01   | PC Desktop HP     |    7000000 |    9984000 |    9 |        2 | NULL                   | NULL
+
+        |               5 |
+    |  7 | TB01   | Teh Botol         |       2000 |       2500 |   53 |       10 | foto-7.jpg             | NULL
+
+        |               4 |
+    |  8 | AC01   | Notebook Acer S   |    8000000 |   11232000 |    7 |        2 | NULL                   | NULL
+
+        |               5 |
+    |  9 | LN01   | Notebook Lenovo   |    9000000 |   12480000 |    9 |        2 | NULL                   | NULL
+
+        |               5 |
+    | 11 | L005   | Laptop Lenovo     |   13000000 |   16000000 |    5 |        2 |                        | NULL
+
+        |               1 |
+    | 15 | L112   | Kopi              |      20000 |      30000 |   10 |       15 | foto-15.png            | Luwak White Coffee merupakan bubuk biji kopi luwak yang dikombinasikan dengan gurihnya krimer serta manisnya gula. Keharuman kopi serta rasa manisnya yang pas juga membuat popularitas Luwak White Coffee melejit. |               4 |
+    | 16 | L113   | Teh Sosro 2       |      10000 |      15000 |   10 |       12 | .png                   | NULL
+
+        |               1 |
+    | 18 | L0015  | Laptop Asus       |    3000000 |    5000000 |   10 |       20 | foto-65542ffa66604.jpg | NULL
+
+        |               1 |
+    | 19 | TV0115 | Televisi 22 inc`  |    3500000 |   50500000 |    5 |        2 | NULL                   | NULL
+
+        |               1 |
+    | 20 | TV0116 | Televisi 23 inc   |    3500000 |   50500000 |    5 |        2 | NULL                   | NULL
+
+        |               1 |
+    | 21 | TV0117 | Televisi 24 inc   |    3500000 |   50500000 |    5 |        2 | NULL                   | NULL
+
+        |               1 |
+    | 22 | TV0118 | Televisi 25 inc   |    3500000 |   50500000 |    5 |        2 | NULL                   | NULL
+
+        |               1 |
+    | 24 | TV0120 | Televisi 27 inc   |    3500000 |   50500000 |    5 |        2 | NULL                   | NULL
+
+        |               1 |
+    | 25 | TV0121 | Televisi 28 inc   |    3500000 |   50500000 |    5 |        2 | NULL                   | NULL
+
+        |               1 |
+    | 26 | TV0122 | Televisi 29 inc   |    3500000 |   50500000 |    5 |        2 | NULL                   | NULL
+
+        |               1 |
+    | 27 | THP001 | Teh Pucuk         |       4000 |       5000 |   10 |        2 | pucuk.jpg              | Teh pucuk adalah
+
+        |               4 |
+    | 28 | THP002 | Teh Pucuk2        |       4000 |       5000 |   10 |        2 | pucuk.jpg              | Teh pucuk adalah
+
+        |               4 |
+    | 29 | HPPC   | Poco F6           |    5300000 |    5500000 |   40 |       10 |                        | Poco F6 12/256Gb
+
+        |               1 |
+    | 30 | HPIP   | Iphone 11         |    6300000 |    6500000 |   30 |       15 |                        | Iphone 11 64GB
+
+        |               2 |
+    | 31 | HPPX   | Poco X6 Pro       |    5000000 |    5200000 |   20 |       10 |                        | Poco X6 Pro 12/512GB
+
+        |               3 |
+    +----+--------+-------------------+------------+------------+------+----------+------------------------+---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------+-----------------+
+    25 rows in set (0.00 sec)
+
+    SAVEPOINT update_produk;
+
+    DELETE FROM pembayaran WHERE id = 1;
+    Query OK, 1 row affected (0.00 sec)
+
+    select * from pembayaran;
+    +----+------------+------------+--------+------+------------+-------------------+
+    | id | nokuitansi | tanggal    | jumlah | ke   | pesanan_id | status_pembayaran |
+    +----+------------+------------+--------+------+------------+-------------------+
+    |  2 | MD002      | 2023-10-10 |  30000 |    2 |         11 | Lunas             |
+    |  3 | MD003      | 2023-10-10 |  30000 |    1 |         11 | Lunas             |
+    |  4 | MD004      | 2023-10-10 |  15000 |    1 |          2 |                   |
+    |  5 | MD005      | 2023-10-10 |  18000 |    2 |          2 | Lunas             |
+    +----+------------+------------+--------+------+------------+-------------------+
+    4 rows in set (0.00 sec)
+
+    ROLLBACK TO update_produk;
+    Query OK, 0 rows affected (0.00 sec)
+
+    select * from pembayaran;
+    +----+------------+------------+--------+------+------------+-------------------+
+    | id | nokuitansi | tanggal    | jumlah | ke   | pesanan_id | status_pembayaran |
+    +----+------------+------------+--------+------+------------+-------------------+
+    |  1 | MD001      | 0000-00-00 |  30000 |    1 |         11 | Lunas             |
+    |  2 | MD002      | 2023-10-10 |  30000 |    2 |         11 | Lunas             |
+    |  3 | MD003      | 2023-10-10 |  30000 |    1 |         11 | Lunas             |
+    |  4 | MD004      | 2023-10-10 |  15000 |    1 |          2 |                   |
+    |  5 | MD005      | 2023-10-10 |  18000 |    2 |          2 | Lunas             |
+    +----+------------+------------+--------+------+------------+-------------------+
+    5 rows in set (0.00 sec)
+
+    UPDATE kartu SET iuran = 20000 WHERE id = 1;
+    Query OK, 1 row affected (0.00 sec)
+    Rows matched: 1  Changed: 1  Warnings: 0
+
+    select * from kartu;
+    +----+------+---------------+--------+--------+
+    | id | kode | nama          | diskon | iuran  |
+    +----+------+---------------+--------+--------+
+    |  1 | GOLD | Gold Utama    |   0.05 |  20000 |
+    |  2 | PLAT | Platinum Jaya |    0.1 | 150000 |
+    |  3 | SLV  | Silver        |  0.025 |  50000 |
+    |  4 | NO   | Non Member    |      0 |      0 |
+    |  7 | PGU  | Perunggu      |    0.5 |   2000 |
+    +----+------+---------------+--------+--------+
+    5 rows in set (0.00 sec)
+
+    COMMIT;
+    Query OK, 0 rows affected (0.00 sec)
+
+2.  -> Mengunci tabel hanya bisa dilihat saja dan memastikan tidak ada perubahan saat backup
+    -> Jika anda memerlukan waktu yang lama untuk melihat data, maka mengunci tabel merupakan hal yang tepat
+    -> Saat ada banyak pengguna perlu membaca data yang sama, mengunci tabel merupakan hal yang tepat untuk menghindari konflik data
+    
+3.  -> Saat melakukan sesi pemeliharaan tabel maka tabel tersebut tidak bisa diakses oleh sesi yang lain sampai kuncinya dilepaskan
+    -> Ketika menjalankan transaksi tidak boleh terganggu oleh sesi lain
+    -> Saat melakukan update besar-besaran pada data agar tidak terganggu oleh sesi lain
+
