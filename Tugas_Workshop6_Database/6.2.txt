@@ -1,0 +1,241 @@
+SOAL 6.2
+
+1.  SELECT * FROM pesanan;
+    +----+------------+---------+--------------+
+    | id | tanggal    | total   | pelanggan_id |
+    +----+------------+---------+--------------+
+    |  1 | 2015-11-04 | 9720000 |            1 |
+    |  2 | 2015-11-04 |   17500 |            3 |
+    |  3 | 2015-11-04 |       0 |            6 |
+    |  4 | 2015-11-04 |       0 |            7 |
+    |  5 | 2015-11-04 |       0 |           10 |
+    |  6 | 2015-11-04 |       0 |            2 |
+    |  7 | 2015-11-04 |       0 |            5 |
+    |  8 | 2015-11-04 |       0 |            4 |
+    |  9 | 2015-11-04 |       0 |            8 |
+    | 10 | 2015-11-04 |       0 |            9 |
+    | 11 | 2015-11-04 |   30000 |            9 |
+    | 12 | 2020-11-04 |   40000 |            9 |
+    +----+------------+---------+--------------+
+    12 rows in set (0.01 sec)
+
+    ALTER TABLE pembayaran ADD status_pembayaran varchar(25);
+    ERROR 1060 (42S21): Duplicate column name 'status_pembayaran'
+    SELECT * FROM pembayaran;
+    +----+------------+------------+--------+------+------------+-------------------+
+    | id | nokuitansi | tanggal    | jumlah | ke   | pesanan_id | status_pembayaran |
+    +----+------------+------------+--------+------+------------+-------------------+
+    |  1 | MD001      | 0000-00-00 |  30000 |    1 |         11 | Lunas             |
+    |  2 | MD002      | 2023-10-10 |  30000 |    2 |         11 | Lunas             |
+    |  3 | MD003      | 2023-10-10 |  30000 |    1 |         11 | Lunas             |
+    |  4 | MD004      | 2023-10-10 |  15000 |    1 |          2 |                   |
+    |  5 | MD005      | 2023-10-10 |  18000 |    2 |          2 | Lunas             |
+    +----+------------+------------+--------+------+------------+-------------------+
+    5 rows in set (0.00 sec)
+
+    DELIMITER $$
+    CREATE TRIGGER cek_pembayaran BEFORE INSERT ON pembayaran
+    -> FOR EACH ROW
+    -> BEGIN
+    -> DECLARE total_bayar DECIMAL(10, 2);
+    -> DECLARE total_pesanan DECIMAL(10, 2);
+    -> SELECT SUM(jumlah) INTO total_bayar FROM pembayaran WHERE pesanan_id = NEW.pesanan_id;
+    -> SELECT total INTO total_pesanan FROM pesanan WHERE id = NEW.pesanan_id;
+    -> IF total_bayar + NEW.jumlah >= total_pesanan THEN SET NEW.status_pembayaran = 'Lunas';
+    -> ELSE SET NEW.status_pembayaran = 'Belum Lunas';
+    -> END IF;
+    -> END$$
+    Query OK, 0 rows affected (0.01 sec)
+
+    DELIMITER ;
+    INSERT INTO pembayaran (nokuitansi, tanggal, jumlah, ke, pesanan_id)
+    -> VALUES ('KWI001', '2023-03-03', 200000, 1, 1);
+    ERROR 1054 (42S22): Unknown column 'pesanan.id' in 'where clause'
+
+
+2.  CREATE PROCEDURE kurangi_stok(IN produk_id INT, IN jumlah_pesanan INT)
+    -> BEGIN
+    ->   DECLARE stok_produk INT;
+    ->   SELECT stok INTO stok_produk FROM produk WHERE id = produk_id;
+    ->   SET stok_produk = stok_produk - jumlah_pesanan;
+    ->   IF stok_produk < 0 THEN
+    ->     SIGNAL SQLSTATE '45000'
+    ->     SET MESSAGE_TEXT = 'Stok produk tidak mencukupi';
+    ->   END IF;
+    ->   UPDATE produk SET stok = stok_produk WHERE id = produk_id;
+    -> END $$
+    ERROR 1304 (42000): PROCEDURE kurangi_stok already exists
+    DELIMITER ;
+
+3. DELIMITER $$
+    CREATE TRIGGER trig_kurangi_stok AFTER INSERT ON pesanan_items
+    -> FOR EACH ROW
+    -> BEGIN
+    ->   CALL kurangi_stok(NEW.produk_id, NEW.qty);
+    -> END $$
+    ERROR 1359 (HY000): Trigger already exists
+    DELIMITER ;
+    SELECT * FROM produk;
+    +----+--------+-------------------+------------+------------+------+----------+------------------------+---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------+-----------------+
+    | id | kode   | nama              | harga_beli | harga_jual | stok | min_stok | foto                   | deskripsi
+
+        | jenis_produk_id |
+    +----+--------+-------------------+------------+------------+------+----------+------------------------+---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------+-----------------+
+    |  1 | TV01   | Televisi 21 inchs |    3500000 |   56805632 |    5 |        2 |                        | NULL
+
+        |               1 |
+    |  2 | TV02   | Televisi 40 inch  |    5500000 | 8368988.16 |    4 |        2 | NULL                   | NULL
+
+        |               1 |
+    |  3 | K001   | Kulkas 2 pintu    |    3500000 | 5264363.52 |    6 |        2 |                        | NULL
+
+        |               1 |
+    |  4 | M001   | Meja Makan        |     500000 |     600000 |    4 |        3 | NULL                   | NULL
+
+        |               2 |
+    |  5 | TK01   | Teh Kotak         |       3000 |       3850 |    6 |       10 | foto-5.png             | NULL
+
+        |               4 |
+    |  6 | PC01   | PC Desktop HP     |    7000000 |    9984000 |    9 |        2 | NULL                   | NULL                                               
+        |               5 |
+    |  7 | TB01   | Teh Botol         |       2000 |       2750 |   53 |       10 | foto-7.jpg             | NULL
+
+        |               4 |
+    |  8 | AC01   | Notebook Acer S   |    8000000 |   11232000 |    7 |        2 | NULL                   | NULL
+
+        |               5 |
+    |  9 | LN01   | Notebook Lenovo   |    9000000 |   12480000 |    9 |        2 | NULL                   | NULL
+
+        |               5 |
+    | 11 | L005   | Laptop Lenovo     |   13000000 |   17997824 |    5 |        2 |                        | NULL
+
+        |               1 |
+    | 15 | L112   | Kopi              |      20000 |      33000 |   10 |       15 | foto-15.png            | Luwak White Coffee merupakan bubuk biji kopi luwak yang dikombinasikan dengan gurihnya krimer serta manisnya gula. Keharuman kopi serta rasa manisnya yang pas juga membuat popularitas Luwak White Coffee melejit. |               4 |
+    | 16 | L113   | Teh Sosro 2       |      10000 |   16872.96 |    5 |       12 | .png                   | NULL
+
+        |               1 |
+    | 18 | L0015  | Laptop Asus       |    3000000 |    5624320 |   10 |       20 | foto-65542ffa66604.jpg | NULL
+
+        |               1 |
+    | 19 | TV0115 | Televisi 22 inc`  |    3500000 |   56805632 |    5 |        2 | NULL                   | NULL
+
+        |               1 |
+    | 20 | TV0116 | Televisi 23 inc   |    3500000 |   56805632 |    5 |        2 | NULL                   | NULL
+
+        |               1 |
+    | 21 | TV0117 | Televisi 24 inc   |    3500000 |   56805632 |    5 |        2 | NULL                   | NULL
+
+        |               1 |
+    | 22 | TV0118 | Televisi 25 inc   |    3500000 |   56805632 |    5 |        2 | NULL                   | NULL
+
+        |               1 |
+    | 24 | TV0120 | Televisi 27 inc   |    3500000 |   56805632 |    5 |        2 | NULL                   | NULL
+
+        |               1 |
+    | 25 | TV0121 | Televisi 28 inc   |    3500000 |   56805632 |    5 |        2 | NULL                   | NULL
+
+        |               1 |
+    | 26 | TV0122 | Televisi 29 inc   |    3500000 |   56805632 |    5 |        2 | NULL                   | NULL
+
+        |               1 |
+    | 27 | THP001 | Teh Pucuk         |       4000 |       5500 |   10 |        2 | pucuk.jpg              | Teh pucuk adalah
+
+        |               4 |
+    | 28 | THP002 | Teh Pucuk2        |       4000 |       5500 |   10 |        2 | pucuk.jpg              | Teh pucuk adalah
+
+        |               4 |
+    | 29 | HPPC   | Poco F6           |    5300000 |    6186752 |   40 |       10 |                        | Poco F6 12/256Gb
+                                                                                                                                                                    |               1 |
+    | 30 | HPIP   | Iphone 11         |    6300000 |    6500000 |   30 |       15 |                        | Iphone 11 64GB
+
+        |               2 |
+    | 31 | HPPX   | Poco X6 Pro       |    5000000 |    5200000 |   20 |       10 |                        | Poco X6 Pro 12/512GB
+
+        |               3 |
+    +----+--------+-------------------+------------+------------+------+----------+------------------------+---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------+-----------------+
+    25 rows in set (0.00 sec)
+
+    INSERT INTO pesanan_items (produk_id, pesanan_id, qty, harga) VALUES
+        -> (7, 3, 2, 7000)
+        -> ;
+    Query OK, 1 row affected (0.00 sec)
+
+    SELECT * FROM produk;
+    +----+--------+-------------------+------------+------------+------+----------+------------------------+---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------+-----------------+
+    | id | kode   | nama              | harga_beli | harga_jual | stok | min_stok | foto                   | deskripsi
+
+        | jenis_produk_id |
+    +----+--------+-------------------+------------+------------+------+----------+------------------------+---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------+-----------------+
+    |  1 | TV01   | Televisi 21 inchs |    3500000 |   56805632 |    5 |        2 |                        | NULL
+
+        |               1 |
+    |  2 | TV02   | Televisi 40 inch  |    5500000 | 8368988.16 |    4 |        2 | NULL                   | NULL
+
+        |               1 |
+    |  3 | K001   | Kulkas 2 pintu    |    3500000 | 5264363.52 |    6 |        2 |                        | NULL
+
+        |               1 |
+    |  4 | M001   | Meja Makan        |     500000 |     600000 |    4 |        3 | NULL                   | NULL
+
+        |               2 |
+    |  5 | TK01   | Teh Kotak         |       3000 |       3850 |    6 |       10 | foto-5.png             | NULL                                               
+        |               4 |
+    |  6 | PC01   | PC Desktop HP     |    7000000 |    9984000 |    9 |        2 | NULL                   | NULL
+
+        |               5 |
+    |  7 | TB01   | Teh Botol         |       2000 |       2750 |   49 |       10 | foto-7.jpg             | NULL
+
+        |               4 |
+    |  8 | AC01   | Notebook Acer S   |    8000000 |   11232000 |    7 |        2 | NULL                   | NULL
+
+        |               5 |
+    |  9 | LN01   | Notebook Lenovo   |    9000000 |   12480000 |    9 |        2 | NULL                   | NULL
+
+        |               5 |
+    | 11 | L005   | Laptop Lenovo     |   13000000 |   17997824 |    5 |        2 |                        | NULL
+
+        |               1 |
+    | 15 | L112   | Kopi              |      20000 |      33000 |   10 |       15 | foto-15.png            | Luwak White Coffee merupakan bubuk biji kopi luwak yang dikombinasikan dengan gurihnya krimer serta manisnya gula. Keharuman kopi serta rasa manisnya yang pas juga membuat popularitas Luwak White Coffee melejit. |               4 |
+    | 16 | L113   | Teh Sosro 2       |      10000 |   16872.96 |    5 |       12 | .png                   | NULL
+
+        |               1 |
+    | 18 | L0015  | Laptop Asus       |    3000000 |    5624320 |   10 |       20 | foto-65542ffa66604.jpg | NULL
+
+        |               1 |
+    | 19 | TV0115 | Televisi 22 inc`  |    3500000 |   56805632 |    5 |        2 | NULL                   | NULL
+
+        |               1 |
+    | 20 | TV0116 | Televisi 23 inc   |    3500000 |   56805632 |    5 |        2 | NULL                   | NULL
+
+        |               1 |
+    | 21 | TV0117 | Televisi 24 inc   |    3500000 |   56805632 |    5 |        2 | NULL                   | NULL
+
+        |               1 |
+    | 22 | TV0118 | Televisi 25 inc   |    3500000 |   56805632 |    5 |        2 | NULL                   | NULL
+
+        |               1 |
+    | 24 | TV0120 | Televisi 27 inc   |    3500000 |   56805632 |    5 |        2 | NULL                   | NULL
+
+        |               1 |
+    | 25 | TV0121 | Televisi 28 inc   |    3500000 |   56805632 |    5 |        2 | NULL                   | NULL
+
+        |               1 |
+    | 26 | TV0122 | Televisi 29 inc   |    3500000 |   56805632 |    5 |        2 | NULL                   | NULL                                               
+        |               1 |
+    | 27 | THP001 | Teh Pucuk         |       4000 |       5500 |   10 |        2 | pucuk.jpg              | Teh pucuk adalah
+
+        |               4 |
+    | 28 | THP002 | Teh Pucuk2        |       4000 |       5500 |   10 |        2 | pucuk.jpg              | Teh pucuk adalah
+
+        |               4 |
+    | 29 | HPPC   | Poco F6           |    5300000 |    6186752 |   40 |       10 |                        | Poco F6 12/256Gb
+
+        |               1 |
+    | 30 | HPIP   | Iphone 11         |    6300000 |    6500000 |   30 |       15 |                        | Iphone 11 64GB
+
+        |               2 |
+    | 31 | HPPX   | Poco X6 Pro       |    5000000 |    5200000 |   20 |       10 |                        | Poco X6 Pro 12/512GB
+
+        |               3 |
+    +----+--------+-------------------+------------+------------+------+----------+------------------------+---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------+-----------------+
+    25 rows in set (0.00 sec)
